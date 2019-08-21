@@ -164,6 +164,14 @@
 				retString += "</table>";
 				$("#allergyDiv").html(retString);
 			});
+			patientApi.fetchAll({type: 'Device'}).then(function(response) {
+				var retString = "<table class='dataTable'>";
+				response.forEach(function(devObj,idx){
+					retString += "<tr><td>"+devObj.text.text+"</td></tr>";
+				});
+				retString += "</table>";
+				$("#devDiv").html(retString);
+			});
 			var lookbackDate = new Date();
 			lookbackDate.setMonth(lookbackDate.getMonth()-6);
 			var month = (lookbackDate.getMonth()+1 < 10)?"0"+(lookbackDate.getMonth()+1):lookbackDate.getMonth()+1;
