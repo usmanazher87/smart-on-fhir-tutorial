@@ -167,7 +167,7 @@
 			patientApi.fetchAll({type: 'Device'}).then(function(response) {
 				var retString = "<table class='dataTable'>";
 				response.forEach(function(devObj,idx){
-					retString += "<tr><td>"+devObj.text.text+"</td></tr>";
+					retString += "<tr><td>"+devObj.type.text+"</td></tr>";
 				});
 				retString += "</table>";
 				$("#devDiv").html(retString);
