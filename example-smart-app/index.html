@@ -1,115 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    
-    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
-    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-    <title>Example-SMART-App</title>
-    <style type="text/css">
-		  .dataTable {width:100%;table-layout:fixed;border-collapse:collapse;}
-		  .dataTable td {box-sizing:border-box;border-bottom:1px solid #000;width:100%;}	
-		  .dataDiv {width:100%;margin-bottom:6px;border:1px solid #000;}
+<html lang="en" hidden>
+	<head>
+	<meta http-equiv='X-UA-Compatible' content='IE=edge' />
+	<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+	<title>Example-SMART-App</title>
+	<style type="text/css">
+		.dataTable {width:100%;table-layout:fixed;border-collapse:collapse;}
+		.dataTable td {box-sizing:border-box;border-bottom:1px solid #000;width:100%;}	
+		.dataDiv {width:100%;margin-bottom:6px;border:1px solid #000;}
 		
-		  .chld-mo-demobar {margin:0 0 6px 0;padding:0;}
-		  .chld-mo-demobar li{display:inline-block;margin:2px 10px 2px 0;}
-		  .chld-mo-demobar li:nth-of-type(1) {margin-right:30px;font-size:1.1em;font-weight:bold;}
-		  .chld-mo-demobar dt,.chld-mo-demobar dd {white-space:nowrap;margin:0;}
-		  .chld-mo-demobar li dt {display:inline;width:30%;padding-right:6px;}
-		  .chld-mo-demobar li dt.demo-data {display:none;}
-		  .chld-mo-demobar dd {width:70%;display:inline;}
-		  .chld-mo-demobar li:nth-last-of-type(1) dd {font-weight:bold;}
-  	</style>
-    <link rel='stylesheet' type='text/css' href='./src/css/example-smart-app.css'>
-    <!--
-      Temporarily disable cerner-smart-embeddable-lib
-      <link rel='stylesheet' type='text/css' href='./lib/css/cerner-smart-embeddable-lib-1.0.0.min.css'>
-    -->
-  </head>
-  <body>
-    	<div id="demoBar">
-			  <ul class='chld-mo-demobar'>
-			  	<li><dt class='demo-data'>Name:</dt><dd id='demo-name'>&nbsp;</dd></li>
-				  <li><dt class='demo-data'>Gender:</dt><dd id='demo-gender'>&nbsp;</dd></li>
-			  	<li><dt class='demo-data'>DOB:</dt><dd id='demo-dob'>&nbsp;</dd></li>
-			  	<li><dt class='demo-data'>Age:</dt><dd id='demo-age'>&nbsp;</dd></li>
-			  	<li><dt>MRN:</dt><dd id='demo-mrn'>&nbsp;</dd></li>
-			  	<li><dt>FIN:</dt><dd id='demo-fin'>&nbsp;</dd></li>
-			  	<li><dt>Location:</dt><dd id='demo-loc'>&nbsp;</dd></li>
-			  	<li><dt>Visit Reason:</dt><dd id='demo-rfv'>&nbsp;</dd></li>
+		.chld-mo-demobar {margin:0 0 6px 0;padding:0;}
+		.chld-mo-demobar li{display:inline-block;margin:2px 10px 2px 0;}
+		.chld-mo-demobar li:nth-of-type(1) {margin-right:30px;font-size:1.1em;font-weight:bold;}
+		.chld-mo-demobar dt,.chld-mo-demobar dd {white-space:nowrap;margin:0;}
+		.chld-mo-demobar li dt {display:inline;width:30%;padding-right:6px;}
+		.chld-mo-demobar li dt.demo-data {display:none;}
+		.chld-mo-demobar dd {width:70%;display:inline;}
+		.chld-mo-demobar li:nth-last-of-type(1) dd {font-weight:bold;}
+	</style>
+	<link rel='stylesheet' type='text/css' href='./src/css/example-smart-app.css'>
+	<link rel='stylesheet' type='text/css' href='./lib/css/cerner-smart-embeddable-lib-1.0.0.min.css'>
+	</head>
+	<body>
+		<div id="demoBar">
+			<ul class='chld-mo-demobar'>
+				<li><dt class='demo-data'>Name:</dt><dd id='demo-name'>&nbsp;</dd></li>
+				<li><dt class='demo-data'>Gender:</dt><dd id='demo-gender'>&nbsp;</dd></li>
+				<li><dt class='demo-data'>DOB:</dt><dd id='demo-dob'>&nbsp;</dd></li>
+				<li><dt class='demo-data'>Age:</dt><dd id='demo-age'>&nbsp;</dd></li>
+				<li><dt>MRN:</dt><dd id='demo-mrn'>&nbsp;</dd></li>
+				<li><dt>FIN:</dt><dd id='demo-fin'>&nbsp;</dd></li>
+				<li><dt>Location:</dt><dd id='demo-loc'>&nbsp;</dd></li>
+				<li><dt>Visit Reason:</dt><dd id='demo-rfv'>&nbsp;</dd></li>
 			</ul>
-		 </div>
-    <div id='errors'>
-    </div>
-    <div id="loading" class="spinner">
-      <div class="bounce1"></div>
-      <div class="bounce2"></div>
-      <div class="bounce3"></div>
-    </div>
-    <div id='holder' >
-      <h2>Example-SMART-App</h2>
+		</div>
+		<div id="medStatementDiv" class="dataDiv">Loading meds...</div>
+		<div id="allergyDiv" class="dataDiv">Loading allergies...</div>
+		<div id="obvDiv" class="dataDiv">Loading observations...</div>
+	</body>
+	<!-- Required JS files to enable this page to embed within an MPage -->
+	<script src='https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js'></script>
+	<script src='./lib/js/cerner-smart-embeddable-lib-1.0.0.min.js'></script>
 
-      <h2>Patient Resource</h2>
-      <table>
-        <tr>
-          <th>First Name:</th>
-          <td id='fname'></td>
-        </tr>
-        <tr>
-          <th>Last Name:</th>
-          <td id='lname'></td>
-        </tr>
-        <tr>
-          <th>Gender:</th>
-          <td id='gender'></td>
-        </tr>
-        <tr>
-          <th>Date of Birth:</th>
-          <td id='birthdate'></td>
-        </tr>
-      </table>
-      <h2>Observation Resource</h2>
-      <table>
-        <tr>
-          <th>Height:</th>
-          <td id='height'></td>
-        </tr>
-        <tr>
-          <th>Systolic Blood Pressure:</th>
-          <td id='systolicbp'></td>
+	<!-- Application-level javascript-->
+	<script src='./src/js/example-smart-app.js'></script>
 
-        </tr>
-        <tr>
-          <th>Diastolic Blood Pressure:</th>
-          <td id='diastolicbp'></td>
-        </tr>
-        <tr>
-          <th>LDL:</th>
-          <td id='ldl'></td>
-        </tr>
-        <tr>
-          <th>HDL:</th>
-          <td id='hdl'></td>
-        </tr>
-      </table>
-    </div>
-    <!-- Required JS files to enable this page to embed within an MPage -->
-    <!--
-      Temporarily disable cerner-smart-embeddable-lib
-      <script src='https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js'></script>
-      <script src='./lib/js/cerner-smart-embeddable-lib-1.0.0.min.js'></script>
-    -->
+	<!-- FHIR Client JS Library -->
+	<script src='./lib/js/fhir-client-v0.1.12.js'></script>
 
-    <!-- Application-level javascript-->
-    <!-- <script src='./src/js/example-smart-app.js'></script> -->
-
-    <!-- FHIR Client JS Library -->
-    <script src='./lib/js/fhir-client-v0.1.12.js'></script>
-
-    <!-- Prevent session bleed caused by single threaded embedded browser and sessionStorage API -->
-    <!-- https://github.com/cerner/fhir-client-cerner-additions -->
-    <script src='./lib/js/fhir-client-cerner-additions-1.0.0.js'></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script>
+	<!-- Prevent session bleed caused by single threaded embedded browser and sessionStorage API -->
+	<!-- https://github.com/cerner/fhir-client-cerner-additions -->
+	<script src='./lib/js/fhir-client-cerner-additions-1.0.0.js'></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script>
 	/**
 	*	Guide to formatting:
 	*	%MM => month w/ zero placeholder					%M => month w/o zero placeholder
@@ -276,5 +219,4 @@
 	}
 	FHIR.oauth2.ready(ready, notReady);
 	</script>
-  </body>
 </html>
