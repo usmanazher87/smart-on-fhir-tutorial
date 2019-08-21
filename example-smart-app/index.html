@@ -166,6 +166,7 @@
 				$("#allergyDiv").html(retString);
 			});
 			patientApi.fetchAll({type:'Device'}).then(function(response) {
+				console.log(response)
 				var retString = "<table class='dataTable'>";
 				response.forEach(function(devObj,idx){
 					retString += "<tr><td>"+devObj.type.text+"</td></tr>";
