@@ -110,18 +110,171 @@
     <script src='./lib/js/fhir-client-cerner-additions-1.0.0.js'></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script>
-      extractData().then(
-        //Display Patient Demographics and Observations if extractData was success
-        function(p) {
-          drawVisualization(p);
-        },
-
-        //Display 'Failed to call FHIR Service' if extractData failed
-        function() {
-          $('#loading').hide();
-          $('#errors').html('<p> Failed to call FHIR Service </p>');
-        }
-      );
-    </script>
+	/**
+	*	Guide to formatting:
+	*	%MM => month w/ zero placeholder					%M => month w/o zero placeholder
+	*	%B => month full string								%b => month 3 letter string
+	*	%dd => day w/ zero placeholder						%d => day w/o zero placeholder
+	*	%yyyy => 4 digit year								%yy => 2 digit year
+	*	%HH => 24 hour-based hours w/ zero placeholder		%H => 24 hour-based hours w/o zero placeholder
+	*	%hh => 12 hour-based hours w/ zero placeholder		%h => 12 hour-based hours w/o zero placeholder
+	*	%mm => minutes w/ zero placeholder					%m => minutes w/o zero placeholder
+	*	%ss => seconds w/ zero placeholder					%s => seconds w/o zero placeholder	
+	*	%P => AM/PM											%p => am/pm
+	*	%F => day full string								%f => day 3 letter string
+	*/
+	Date.prototype.formatString = function( formatStr ) {
+		var shortdatetime = "%MM/%dd/%yy %HH:%mm", 
+			shortdate = "%MM/%dd/%yy",
+			longdatetime = "%MM/%dd/%yyyy %HH:%mm",
+			longdate = "%MM/%dd/%yyyy";
+		
+		var ret_str = formatStr;
+		switch (ret_str)
+		{
+			case "shortdatetime":
+				ret_str = shortdatetime;
+				break;
+			case "shortdate":
+				ret_str = shortdate;
+				break;
+			case "longdatetime":
+				ret_str = longdatetime;
+				break;
+			case "longdate":
+				ret_str = longdate;
+				break;
+			default:
+				break;
+		};
+		var SHORT_DAY = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+		var LONG_DAY = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+		var SHORT_MONTH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+		var LONG_MONTH = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+		var monStr=((this.getMonth()+1)<10)?"0"+(this.getMonth()+1):""+(this.getMonth()+1);
+		var dateStr = (this.getDate()<10)?"0"+this.getDate():""+this.getDate();
+		var yearStr = (this.getFullYear()+"").slice(2);
+		var shortHours = (this.getHours()>=1 && this.getHours()<=12)?this.getHours():(this.getHours()%12);
+		shortHours = (shortHours==0)?12:shortHours;
+		var hourStr = (shortHours<10)?"0"+shortHours:""+shortHours;
+		var HourStr = (this.getHours()<10)?"0"+this.getHours():""+this.getHours();
+		var minuteStr = (this.getMinutes()<10)?"0"+this.getMinutes():""+this.getMinutes();
+		var secStr = (this.getSeconds()<10)?"0"+this.getSeconds():""+this.getSeconds();
+		var amPM = (this.getHours()>=12)?"pm":"am";
+		var retVal = ret_str.replace(/%MM/,monStr).replace(/%M/,(this.getMonth()+1)).replace(/%dd/,dateStr).replace(/%d/,this.getDate()).replace(/%yyyy/,this.getFullYear()).replace(/%yy/,yearStr).replace(/%HH/,HourStr).replace(/%H/,this.getHours()).replace(/%hh/,hourStr).replace(/%h/,shortHours).replace(/%mm/,minuteStr).replace(/%m/,this.getMinutes()).replace(/%ss/,secStr).replace(/%s/,this.getSeconds()).replace(/%p/,amPM).replace(/%P/,amPM.toUpperCase()).replace(/%b/,SHORT_MONTH[this.getMonth()]).replace(/%B/,LONG_MONTH[this.getMonth()]).replace(/%F/,LONG_DAY[this.getDay()]).replace(/%f/,SHORT_DAY[this.getDay()]);
+		return (isNaN(this.getTime()))?"Invalid Date":retVal;
+	};
+	function ready(smart) {
+		if (typeof smart.patient === "object") {
+			console.log(smart);
+			var patientApi = smart.patient.api;
+			var encounterId = smart.encounter.id;
+			
+			patientApi.fetchAll({type: 'Patient'}).then(function(response) {
+				console.log(response);
+				response = response[0];
+				$("#demo-name").html((response.name && response.name.length && response.name[0].text)?response.name[0].text:"Unknown");
+				$("#demo-gender").html((response.gender)?response.gender.substr(0,1).toUpperCase():"Unknown");
+				$("#demo-dob").html((response.birthDate)?new Date(response.birthDate).formatString("longdate"):"&nbsp;");
+				//$("#demo-age").innerHTML = "";
+				if (response.identifier && response.identifier.length) {
+					response.identifier.forEach(function(obj,idx){
+						if (obj.system === "urn:oid:1.1.1.1.1.1") {
+							$("#demo-mrn").html(obj.value);
+						}
+					});
+				}
+			});
+			
+			smart.api.fetchAll({type: 'Encounter', query:{"_id":encounterId}}).then(function(response) {
+				response = response[0];
+				console.log(response);
+				
+				if (response.identifier && response.identifier.length) {
+					response.identifier.forEach(function(obj,idx){
+						if (obj.system === "urn:oid:3.3.3.3.3.3") {
+							$("#demo-fin").html(obj.value);
+						}
+					});
+				}
+				$("#demo-loc").html((response.location && response.location.length)?response.location[0].location.display:"&nbsp;");
+				$("#demo-rfv").html((response.reason && response.reason.length)?response.reason[0].text:"&nbsp;");
+			});
+			
+			patientApi.fetchAll({type: 'MedicationStatement'}).then(function(response) {
+				var retString = "<table class='dataTable'>";
+				response.forEach(function(medObj,idx){
+					retString += "<tr><td>"+medObj.medicationCodeableConcept.text+"</td></tr>";
+				});
+				retString += "</table>";
+				$("#medStatementDiv").html(retString);
+			});
+			patientApi.fetchAll({type:'AllergyIntolerance',query:{status:'active'}}).then(function(response) {
+				var retString = "<table class='dataTable'>";
+				response.forEach(function(allObj,idx){
+					retString += 
+						"<tr>"+
+							"<td>"+allObj.substance.text+"</td>"+
+							"<td>"+allObj.status+"</td>"+
+						"</tr>";
+				});
+				retString += "</table>";
+				$("#allergyDiv").html(retString);
+			});
+			var lookbackDate = new Date();
+			lookbackDate.setMonth(lookbackDate.getMonth()-6);
+			var month = (lookbackDate.getMonth()+1 < 10)?"0"+(lookbackDate.getMonth()+1):lookbackDate.getMonth()+1;
+			var date = (lookbackDate.getDate() < 10)?"0"+lookbackDate.getDate():lookbackDate.getDate();
+			var curDateStr = "gt"+lookbackDate.getFullYear()+"-"+month+"-"+date;
+			patientApi.fetchAll({
+				type: 'Observation',
+				query: {
+					category: {
+						$or: ["laboratory","vital-signs"]
+					},
+					code: {
+						$or: ['http://loinc.org|29463-7', 'http://loinc.org|8302-2', 'http://loinc.org|8462-4',
+						'http://loinc.org|8480-6', 'http://loinc.org|2085-9',
+						'http://loinc.org|2089-1', 'http://loinc.org|55284-4']
+					}/*,
+					date: curDateStr*/
+				}
+			}).then(function(response) {
+				/*
+				document.getElementById("obvDiv").innerText = JSON.stringify(response);
+				return;
+				*/
+				function handleValueQuantity( qObj, dtTm, txt ) {
+					return "<tr>"+
+								"<td>"+txt+"</td>"+
+								"<td>"+qObj.value+" "+qObj.unit+"</td>"+
+								"<td>"+dtTm+"</td>"+
+							"</tr>";
+				}
+				var retString = "<table class='dataTable'>";
+				response.forEach(function(obvObj,idx){
+					if (typeof obvObj.valueQuantity === "object") {
+						retString += handleValueQuantity( obvObj.valueQuantity, obvObj.effectiveDateTime, obvObj.code.text );
+					}
+					else if (typeof obvObj.component === "object" && obvObj.component.length) {
+						obvObj.component.forEach(function(cObj,idx2) {
+							if (typeof cObj.valueQuantity === "object") {
+								retString += handleValueQuantity( cObj.valueQuantity, obvObj.effectiveDateTime, cObj.code.text );
+							}	
+						});
+					}
+				});
+				retString += "</table>";
+				$("#obvDiv").html(retString);
+			});
+		}
+	}
+	function notReady(response) {
+		if (window.location.href.indexOf('error') < 0) {
+			document.body.innerText = "Launch first.";
+		}
+	}
+	FHIR.oauth2.ready(ready, notReady);
+	</script>
   </body>
 </html>
